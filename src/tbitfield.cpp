@@ -35,15 +35,13 @@ TBitField::TBitField(const TBitField& bf) // конструктор копиро
 
 TBitField::~TBitField()
 {
-    if (pMem != nullptr) {
-        delete[]pMem;
-    }
+    delete[] pMem;
 }
 
 int TBitField::GetMemIndex(const int n) const // индекс Мем для бита n
 {
     
-    return n / (sizeof(TELEM) * 8);
+    return n / (sizeof(TELEM) <<3 );
 }
 
 TELEM TBitField::GetMemMask(const int n) const // битовая маска для бита n
@@ -66,7 +64,7 @@ void TBitField::SetBit(const int n) // установить бит
 
     int index = GetMemIndex(n);
 
-    int number_bit = n - (n / (sizeof(TELEM) * 8)) * (sizeof(TELEM) * 8);
+    int number_bit = n - index * (sizeof(TELEM) <<3);
     pMem[index] |= GetMemMask(number_bit);
 }
 
@@ -160,14 +158,13 @@ TBitField TBitField::operator&(const TBitField& bf) // операция "и"
 
 TBitField TBitField::operator~(void) // отрицание
 {
-    TBitField res(BitLen);
-    for (int i = 0; i < MemLen;i++) {
-        res.pMem[i] = ~pMem[i];
-    }
-    int shift = BitLen & ((1 << 5) - 1);
-    res.pMem[MemLen - 1] = (~pMem[MemLen - 1]) & ((1 << shift) - 1);
+    TBitField tb(BitLen);
+    for (int i = 0; i < MemLen - 1; i++)
+        tb.pMem[i] = ~pMem[i];
+    int dvig = BitLen & 15;
+    tb.pMem[MemLen - 1] = (~pMem[MemLen - 1]) & ((1 << dvig) - 1);
     
-    return res;
+    return tb;
 }
 
 // ввод/вывод
